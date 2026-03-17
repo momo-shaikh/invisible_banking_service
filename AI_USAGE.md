@@ -61,3 +61,7 @@
   - Added PATCH /accounts/{id}/cards/status
 - Patch 26: Focused card read endpoints
   - Replaced generic card GET with status and limit endpoints
+- Patch 27: Minimal card tests
+  - Added create/status/limit/update tests and card-aware cleanup
+- Patch 28: Card status transition test
+  - Extended status update test to freeze and reactivate the card

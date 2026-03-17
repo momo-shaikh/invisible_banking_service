@@ -22,6 +22,7 @@ import org.springframework.test.context.jdbc.Sql.ExecutionPhase;
 @Sql(
         statements = {
                 "DELETE FROM transactions",
+                "DELETE FROM cards",
                 "DELETE FROM accounts",
                 "DELETE FROM account_holders",
                 "INSERT INTO account_holders (id, full_name, email) VALUES (1, 'Taylor Fox', 'taylor@example.com')",
