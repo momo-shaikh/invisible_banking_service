@@ -19,3 +19,6 @@
   - Allowed null sender/recipient IDs for deposits/withdrawals
 - Patch 6: Tightened transaction validation
   - Enforced sender/recipient presence rules by type
+- Patch 7: SQLite persistence
+  - Added JDBC + SQLite dependencies and schema
+  - Replaced in-memory store with JDBC store

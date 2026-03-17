@@ -4,7 +4,7 @@ import com.momo.dto.TransactionCreateRequest;
 import com.momo.model.Account;
 import com.momo.model.Transaction;
 import com.momo.model.TransactionType;
-import com.momo.store.InMemoryStore;
+import com.momo.store.JdbcStore;
 import jakarta.validation.Valid;
 import java.math.BigDecimal;
 import java.util.List;
@@ -20,9 +20,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping
 public class TransactionController {
-    private final InMemoryStore store;
+    private final JdbcStore store;
 
-    public TransactionController(InMemoryStore store) {
+    public TransactionController(JdbcStore store) {
         this.store = store;
     }
 

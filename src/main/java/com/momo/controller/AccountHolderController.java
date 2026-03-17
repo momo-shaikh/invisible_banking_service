@@ -3,7 +3,7 @@ package com.momo.controller;
 import com.momo.dto.AccountHolderCreateRequest;
 import com.momo.model.Account;
 import com.momo.model.AccountHolder;
-import com.momo.store.InMemoryStore;
+import com.momo.store.JdbcStore;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.http.HttpStatus;
@@ -18,9 +18,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/holders")
 public class AccountHolderController {
-    private final InMemoryStore store;
+    private final JdbcStore store;
 
-    public AccountHolderController(InMemoryStore store) {
+    public AccountHolderController(JdbcStore store) {
         this.store = store;
     }
 
