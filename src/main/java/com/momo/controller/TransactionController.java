@@ -63,7 +63,7 @@ public class TransactionController {
             throw new IllegalArgumentException("Sender account not found");
         }
         if (sender.balance().compareTo(request.amount()) < 0) {
-            throw new IllegalArgumentException("Insufficient funds");
+            throw new IllegalStateException("Insufficient funds");
         }
         BigDecimal newBalance = sender.balance().subtract(request.amount());
         store.updateAccountBalance(sender.id(), newBalance);
@@ -77,7 +77,7 @@ public class TransactionController {
             throw new IllegalArgumentException("Sender or recipient account not found");
         }
         if (sender.balance().compareTo(request.amount()) < 0) {
-            throw new IllegalArgumentException("Insufficient funds");
+            throw new IllegalStateException("Insufficient funds");
         }
         store.updateAccountBalance(sender.id(), sender.balance().subtract(request.amount()));
         store.updateAccountBalance(recipient.id(), recipient.balance().add(request.amount()));

@@ -9,6 +9,6 @@ public record Transaction(
         @Positive Long senderAccountId,
         @Positive Long recipientAccountId,
         @NotNull @Positive BigDecimal amount,
-        @NotNull TransactionType type,
+        @NotNull TransactionType transactionType,
         String note
 ) {}

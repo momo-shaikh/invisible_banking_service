@@ -22,3 +22,30 @@
 - Patch 7: SQLite persistence
   - Added JDBC + SQLite dependencies and schema
   - Replaced in-memory store with JDBC store
+- Patch 8: Tests for holders, accounts, and transactions
+  - Added MockMvc integration tests
+  - Added test SQLite config and DB cleanup
+- Patch 9: Negative transaction tests
+  - Added insufficient funds and missing recipient cases
+- Patch 10: Bad request handling for insufficient funds
+  - Mapped insufficient funds to 400
+- Patch 11: Test runtime fix
+  - Added JUnit platform launcher runtime dependency
+- Patch 12: Fix account create request
+  - Renamed account type field to match JSON input
+- Patch 13: Test fixes for accountType
+  - Updated tests to use accountType field
+- Patch 14: Test fixtures
+  - Added seed data and updated tests to use it
+- Patch 15: Test independence
+  - Made holder account listing rely only on seeded data
+- Patch 16: Test naming
+  - Simplified account test names
+- Patch 17: Inline test SQL
+  - Replaced shared seed file with @Sql statements per test class
+- Patch 18: Controller-aligned tests
+  - Moved holder account listing test to AccountHolderControllerTest
+- Patch 19: Transaction test split
+  - Separated deposit, withdrawal, and transfer tests
+- Patch 20: Test SQL isolation
+  - Added per-class cleanup before seed inserts

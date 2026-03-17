@@ -8,6 +8,6 @@ import java.math.BigDecimal;
 public record Account(
         @Positive long id,
         @Positive long holderId,
-        @NotNull AccountType type,
+        @NotNull AccountType accountType,
         @NotNull @PositiveOrZero BigDecimal balance
 ) {}
