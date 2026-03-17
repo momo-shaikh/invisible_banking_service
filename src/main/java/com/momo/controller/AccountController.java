@@ -1,11 +1,10 @@
 package com.momo.controller;
 
-import com.momo.dto.AccountHolderCreateRequest;
+import com.momo.dto.AccountCreateRequest;
 import com.momo.model.Account;
 import com.momo.model.AccountHolder;
 import com.momo.store.InMemoryStore;
 import jakarta.validation.Valid;
-import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,35 +15,30 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/holders")
-public class AccountHolderController {
+@RequestMapping("/accounts")
+public class AccountController {
     private final InMemoryStore store;
 
-    public AccountHolderController(InMemoryStore store) {
+    public AccountController(InMemoryStore store) {
         this.store = store;
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public AccountHolder create(@Valid @RequestBody AccountHolderCreateRequest request) {
-        return store.saveHolder(request.fullName(), request.email());
+    public Account create(@Valid @RequestBody AccountCreateRequest request) {
+        AccountHolder holder = store.getHolder(request.holderId());
+        if (holder == null) {
+            throw new IllegalArgumentException("Account holder not found");
+        }
+        return store.saveAccount(request.holderId(), request.accountType(), request.balance());
     }
 
     @GetMapping("/{id}")
-    public AccountHolder get(@PathVariable long id) {
-        AccountHolder holder = store.getHolder(id);
-        if (holder == null) {
-            throw new IllegalArgumentException("Account holder not found");
+    public Account get(@PathVariable long id) {
+        Account account = store.getAccount(id);
+        if (account == null) {
+            throw new IllegalArgumentException("Account not found");
         }
-        return holder;
-    }
-
-    @GetMapping("/{id}/accounts")
-    public List<Account> listAccounts(@PathVariable long id) {
-        AccountHolder holder = store.getHolder(id);
-        if (holder == null) {
-            throw new IllegalArgumentException("Account holder not found");
-        }
-        return store.getAccountsByHolder(id);
+        return account;
     }
 }
