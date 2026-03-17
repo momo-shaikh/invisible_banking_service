@@ -3,6 +3,9 @@ package com.momo.store;
 import com.momo.model.Account;
 import com.momo.model.AccountHolder;
 import com.momo.model.AccountType;
+import com.momo.model.Card;
+import com.momo.model.CardStatus;
+import com.momo.model.CardType;
 import com.momo.model.Transaction;
 import com.momo.model.TransactionType;
 import java.math.BigDecimal;
@@ -84,6 +87,19 @@ public class JdbcStore {
         );
     }
 
+    public Card saveCard(long accountId, CardType type, BigDecimal cardLimit, CardStatus status) {
+        long id = nextId("cards");
+        jdbcTemplate.update(
+                "INSERT INTO cards (id, account_id, type, card_limit, status) VALUES (?, ?, ?, ?, ?)",
+                id,
+                accountId,
+                type.name(),
+                cardLimit,
+                status.name()
+        );
+        return new Card(id, accountId, type, cardLimit, status);
+    }
+
     public Transaction saveTransaction(Long senderAccountId, Long recipientAccountId, BigDecimal amount, TransactionType type, String note) {
         long id = nextId("transactions");
         jdbcTemplate.update(
@@ -150,6 +166,16 @@ public class JdbcStore {
                 rs.getBigDecimal("amount"),
                 TransactionType.valueOf(rs.getString("type")),
                 rs.getString("note")
+        );
+    }
+
+    private RowMapper<Card> cardRowMapper() {
+        return (rs, rowNum) -> new Card(
+                rs.getLong("id"),
+                rs.getLong("account_id"),
+                CardType.valueOf(rs.getString("type")),
+                rs.getBigDecimal("card_limit"),
+                CardStatus.valueOf(rs.getString("status"))
         );
     }
 

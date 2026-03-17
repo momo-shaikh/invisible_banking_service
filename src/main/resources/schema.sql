@@ -24,3 +24,12 @@ CREATE TABLE IF NOT EXISTS transactions (
     FOREIGN KEY (sender_account_id) REFERENCES accounts(id),
     FOREIGN KEY (recipient_account_id) REFERENCES accounts(id)
 );
+
+CREATE TABLE IF NOT EXISTS cards (
+    id INTEGER PRIMARY KEY,
+    account_id INTEGER NOT NULL,
+    type TEXT NOT NULL,
+    card_limit NUMERIC NOT NULL,
+    status TEXT NOT NULL,
+    FOREIGN KEY (account_id) REFERENCES accounts(id)
+);

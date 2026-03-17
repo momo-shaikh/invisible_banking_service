@@ -49,3 +49,5 @@
   - Separated deposit, withdrawal, and transfer tests
 - Patch 20: Test SQL isolation
   - Added per-class cleanup before seed inserts
+- Patch 21: First card endpoint
+  - Added cards table, create request DTO, store save method, and POST /accounts/{id}/cards
