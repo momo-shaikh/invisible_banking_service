@@ -51,3 +51,13 @@
   - Added per-class cleanup before seed inserts
 - Patch 21: First card endpoint
   - Added cards table, create request DTO, store save method, and POST /accounts/{id}/cards
+- Patch 22: Account card listing
+  - Added GET /accounts/{id}/cards and store query support
+- Patch 23: Card controller ownership
+  - Moved all account-scoped card routes into CardController
+- Patch 24: One card per account
+  - Simplified card lookup to a single card per account and prevented duplicates
+- Patch 25: Card status update endpoint
+  - Added PATCH /accounts/{id}/cards/status
+- Patch 26: Focused card read endpoints
+  - Replaced generic card GET with status and limit endpoints

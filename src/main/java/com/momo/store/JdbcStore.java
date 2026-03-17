@@ -100,6 +100,36 @@ public class JdbcStore {
         return new Card(id, accountId, type, cardLimit, status);
     }
 
+    public Card getCardByAccount(long accountId) {
+        List<Card> results = jdbcTemplate.query(
+                "SELECT id, account_id, type, card_limit, status FROM cards WHERE account_id = ?",
+                cardRowMapper(),
+                accountId
+        );
+        return results.isEmpty() ? null : results.get(0);
+    }
+
+    public Card getCard(long cardId) {
+        List<Card> results = jdbcTemplate.query(
+                "SELECT id, account_id, type, card_limit, status FROM cards WHERE id = ?",
+                cardRowMapper(),
+                cardId
+        );
+        return results.isEmpty() ? null : results.get(0);
+    }
+
+    public Card updateCardStatus(long accountId, CardStatus status) {
+        int updated = jdbcTemplate.update(
+                "UPDATE cards SET status = ? WHERE account_id = ?",
+                status.name(),
+                accountId
+        );
+        if (updated == 0) {
+            return null;
+        }
+        return getCardByAccount(accountId);
+    }
+
     public Transaction saveTransaction(Long senderAccountId, Long recipientAccountId, BigDecimal amount, TransactionType type, String note) {
         long id = nextId("transactions");
         jdbcTemplate.update(
