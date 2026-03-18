@@ -1,6 +1,7 @@
 package com.momo;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -59,6 +60,63 @@ class AccountControllerTest extends ApiTestBase {
         mockMvc.perform(get("/accounts/{id}", accountId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(accountId));
+    }
+
+    @Test
+    void deleteFundedAccount() throws Exception {
+        mockMvc.perform(delete("/accounts/{id}", 10))
+                .andExpect(status().isNoContent());
+
+        mockMvc.perform(get("/accounts/{id}", 10))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error").value("Account not found"));
+    }
+
+    @Test
+    void deleteAccountAlsoDeletesCardsAndTransactions() throws Exception {
+        mockMvc.perform(post("/accounts")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of(
+                                "holderId", 1,
+                                "accountType", "CHECKING",
+                                "balance", 25.00
+                        ))))
+                .andExpect(status().isCreated())
+                .andDo(result -> {
+                    long accountId = objectMapper.readTree(result.getResponse().getContentAsString()).get("id").asLong();
+
+                    mockMvc.perform(post("/accounts/{id}/cards", accountId)
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(objectMapper.writeValueAsString(Map.of(
+                                            "type", "DEBIT",
+                                            "status", "ACTIVE"
+                                    ))))
+                            .andExpect(status().isCreated());
+
+                    mockMvc.perform(post("/transactions")
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(objectMapper.writeValueAsString(Map.of(
+                                            "recipientAccountId", accountId,
+                                            "amount", 5.00,
+                                            "transactionType", "DEPOSIT"
+                                    ))))
+                            .andExpect(status().isCreated());
+
+                    mockMvc.perform(delete("/accounts/{id}", accountId))
+                            .andExpect(status().isNoContent());
+
+                    mockMvc.perform(get("/accounts/{id}", accountId))
+                            .andExpect(status().isNotFound())
+                            .andExpect(jsonPath("$.error").value("Account not found"));
+
+                    mockMvc.perform(get("/accounts/{id}/cards/status", accountId))
+                            .andExpect(status().isNotFound())
+                            .andExpect(jsonPath("$.error").value("Account not found"));
+
+                    mockMvc.perform(get("/accounts/{id}/statement", accountId))
+                            .andExpect(status().isNotFound())
+                            .andExpect(jsonPath("$.error").value("Account not found"));
+                });
     }
 
 }

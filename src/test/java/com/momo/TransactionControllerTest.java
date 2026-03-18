@@ -218,12 +218,39 @@ class TransactionControllerTest extends ApiTestBase {
     }
 
     @Test
+    void depositFailsWhenRecipientCardFrozen() throws Exception {
+        mockMvc.perform(post("/transactions")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of(
+                                "recipientAccountId", 70,
+                                "amount", 5.00,
+                                "transactionType", "DEPOSIT"
+                        ))))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("Card is frozen"));
+    }
+
+    @Test
     void transferFailsWhenSenderCardFrozen() throws Exception {
         mockMvc.perform(post("/transactions")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(Map.of(
                                 "senderAccountId", 70,
                                 "recipientAccountId", 30,
+                                "amount", 5.00,
+                                "transactionType", "TRANSFER"
+                        ))))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("Card is frozen"));
+    }
+
+    @Test
+    void transferFailsWhenRecipientCardFrozen() throws Exception {
+        mockMvc.perform(post("/transactions")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of(
+                                "senderAccountId", 20,
+                                "recipientAccountId", 70,
                                 "amount", 5.00,
                                 "transactionType", "TRANSFER"
                         ))))

@@ -25,6 +25,11 @@ const emptyAccountForm = {
   balance: "0.00",
 };
 
+const emptyStatementFilters = {
+  fromDate: "",
+  toDate: "",
+};
+
 async function api(path, options = {}) {
   const response = await fetch(path, {
     headers: { "Content-Type": "application/json", ...(options.headers ?? {}) },
@@ -54,6 +59,7 @@ function App() {
   const [cardLimit, setCardLimit] = useState(null);
   const [cardForm, setCardForm] = useState(emptyCardForm);
   const [accountForm, setAccountForm] = useState(emptyAccountForm);
+  const [statementFilters, setStatementFilters] = useState(emptyStatementFilters);
   const [transactionForm, setTransactionForm] = useState(emptyTransaction);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
@@ -113,10 +119,18 @@ function App() {
     }
   }
 
-  async function loadAccountDetails(accountId) {
+  async function loadAccountDetails(accountId, filters = statementFilters) {
     try {
+      const query = new URLSearchParams();
+      if (filters.fromDate) {
+        query.set("fromDate", filters.fromDate);
+      }
+      if (filters.toDate) {
+        query.set("toDate", filters.toDate);
+      }
+      const statementPath = query.size > 0 ? `/accounts/${accountId}/statement?${query.toString()}` : `/accounts/${accountId}/statement`;
       const [statementResult, statusResult, limitResult] = await Promise.all([
-        api(`/accounts/${accountId}/statement`),
+        api(statementPath),
         api(`/accounts/${accountId}/cards/status`).catch(() => null),
         api(`/accounts/${accountId}/cards/limit`).catch(() => null),
       ]);
@@ -131,6 +145,41 @@ function App() {
       }));
     } catch (error) {
       setMessage(error.message);
+    }
+  }
+
+  async function handleStatementFilterSubmit(event) {
+    event.preventDefault();
+    if (!selectedAccountId) {
+      return;
+    }
+
+    setBusy(true);
+    setMessage("");
+    try {
+      await loadAccountDetails(selectedAccountId, statementFilters);
+    } catch (error) {
+      setMessage(error.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function clearStatementFilters() {
+    if (!selectedAccountId) {
+      setStatementFilters(emptyStatementFilters);
+      return;
+    }
+
+    setBusy(true);
+    setMessage("");
+    try {
+      setStatementFilters(emptyStatementFilters);
+      await loadAccountDetails(selectedAccountId, emptyStatementFilters);
+    } catch (error) {
+      setMessage(error.message);
+    } finally {
+      setBusy(false);
     }
   }
 
@@ -261,6 +310,30 @@ function App() {
     }
   }
 
+  async function handleDeleteAccount() {
+    if (!selectedAccountId || !auth) {
+      return;
+    }
+    if (!window.confirm("Delete this account and all of its cards and transactions? This cannot be undone and your money will vanish 😈")) {
+      return;
+    }
+
+    setBusy(true);
+    setMessage("");
+    try {
+      await api(`/accounts/${selectedAccountId}`, { method: "DELETE" });
+      await loadAccounts(auth.holderId, null);
+      setStatement(null);
+      setCardStatus(null);
+      setCardLimit(null);
+      setMessage("Account deleted");
+    } catch (error) {
+      setMessage(error.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
   if (!auth) {
     return (
       <main className="shell">
@@ -383,7 +456,12 @@ function App() {
               <h2>{selectedAccount?.accountType ?? "No account selected"}</h2>
               <p className="muted mono">{selectedAccount?.id}</p>
             </div>
-            <div className="metric">{selectedAccount ? Number(selectedAccount.balance).toFixed(2) : "--"}</div>
+            <div className="hero-actions">
+              <div className="metric">{selectedAccount ? Number(selectedAccount.balance).toFixed(2) : "--"}</div>
+              <button className="danger" type="button" disabled={busy || !selectedAccountId} onClick={handleDeleteAccount}>
+                {busy ? "Working..." : "Delete account"}
+              </button>
+            </div>
           </div>
 
           <div className="panel card-panel">
@@ -400,10 +478,20 @@ function App() {
             </div>
             {cardStatus ? (
               <div className="button-row">
-                <button className="ghost" type="button" disabled={busy} onClick={() => updateCardStatus("ACTIVE")}>
+                <button
+                  className={`ghost ${cardStatus === "ACTIVE" ? "status-button-active" : ""}`}
+                  type="button"
+                  disabled={busy}
+                  onClick={() => updateCardStatus("ACTIVE")}
+                >
                   Set ACTIVE
                 </button>
-                <button className="ghost" type="button" disabled={busy} onClick={() => updateCardStatus("FROZEN")}>
+                <button
+                  className={`ghost ${cardStatus === "FROZEN" ? "status-button-active" : ""}`}
+                  type="button"
+                  disabled={busy}
+                  onClick={() => updateCardStatus("FROZEN")}
+                >
                   Set FROZEN
                 </button>
               </div>
@@ -511,6 +599,32 @@ function App() {
 
           <div className="panel statement-panel">
             <div className="section-title">Statement</div>
+            <form className="statement-filter-row" onSubmit={handleStatementFilterSubmit}>
+              <label>
+                <span>From</span>
+                <input
+                  type="date"
+                  value={statementFilters.fromDate}
+                  onChange={(event) => setStatementFilters({ ...statementFilters, fromDate: event.target.value })}
+                />
+              </label>
+              <label>
+                <span>To</span>
+                <input
+                  type="date"
+                  value={statementFilters.toDate}
+                  onChange={(event) => setStatementFilters({ ...statementFilters, toDate: event.target.value })}
+                />
+              </label>
+              <div className="statement-filter-actions">
+                <button className="primary" type="submit" disabled={busy || !selectedAccountId}>
+                  {busy ? "Applying..." : "Apply"}
+                </button>
+                <button className="ghost" type="button" disabled={busy} onClick={clearStatementFilters}>
+                  Clear
+                </button>
+              </div>
+            </form>
             <div className="statement-meta">
               <span>From {statement?.fromDate ?? "--"}</span>
               <span>To {statement?.toDate ?? "--"}</span>

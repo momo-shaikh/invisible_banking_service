@@ -17,6 +17,7 @@ import java.util.List;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 @Component
 public class JdbcStore {
@@ -115,6 +116,18 @@ public class JdbcStore {
                 accountRowMapper(),
                 holderId
         );
+    }
+
+    @Transactional
+    public boolean deleteAccount(long accountId) {
+        jdbcTemplate.update(
+                "DELETE FROM transactions WHERE sender_account_id = ? OR recipient_account_id = ?",
+                accountId,
+                accountId
+        );
+        jdbcTemplate.update("DELETE FROM cards WHERE account_id = ?", accountId);
+        int updated = jdbcTemplate.update("DELETE FROM accounts WHERE id = ?", accountId);
+        return updated > 0;
     }
 
     public Card saveCard(long accountId, CardType type, BigDecimal cardLimit, CardStatus status) {

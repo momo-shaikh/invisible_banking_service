@@ -55,6 +55,7 @@ public class TransactionController {
         if (recipient == null) {
             throw new IllegalArgumentException("Recipient account not found");
         }
+        ensureTransactionsAllowed(recipient);
         BigDecimal newBalance = recipient.balance().add(request.amount());
         store.updateAccountBalance(recipient.id(), newBalance);
         return store.saveTransaction(null, recipient.id(), request.amount(), request.transactionType(), request.note());
@@ -65,7 +66,7 @@ public class TransactionController {
         if (sender == null) {
             throw new IllegalArgumentException("Sender account not found");
         }
-        ensureOutgoingTransactionsAllowed(sender);
+        ensureTransactionsAllowed(sender);
         BigDecimal newBalance = sender.balance().subtract(request.amount());
         if (newBalance.compareTo(minimumAllowedBalance(sender)) < 0) {
             throw new IllegalStateException("Insufficient funds");
@@ -80,7 +81,8 @@ public class TransactionController {
         if (sender == null || recipient == null) {
             throw new IllegalArgumentException("Sender or recipient account not found");
         }
-        ensureOutgoingTransactionsAllowed(sender);
+        ensureTransactionsAllowed(sender);
+        ensureTransactionsAllowed(recipient);
         BigDecimal senderNewBalance = sender.balance().subtract(request.amount());
         if (senderNewBalance.compareTo(minimumAllowedBalance(sender)) < 0) {
             throw new IllegalStateException("Insufficient funds");
@@ -102,7 +104,7 @@ public class TransactionController {
         return card.cardLimit().negate();
     }
 
-    private void ensureOutgoingTransactionsAllowed(Account account) {
+    private void ensureTransactionsAllowed(Account account) {
         Card card = store.getCardByAccount(account.id());
         if (card != null && card.status() == CardStatus.FROZEN) {
             throw new IllegalStateException("Card is frozen");
