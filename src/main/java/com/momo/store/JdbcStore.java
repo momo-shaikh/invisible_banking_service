@@ -20,6 +20,8 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class JdbcStore {
+    private static final long MAX_JAVASCRIPT_SAFE_ID = 9_007_199_254_740_991L;
+
     private final JdbcTemplate jdbcTemplate;
     private final SecureRandom idGenerator = new SecureRandom();
 
@@ -192,7 +194,7 @@ public class JdbcStore {
     private long nextId(String table) {
         long id;
         do {
-            id = idGenerator.nextLong() & Long.MAX_VALUE;
+            id = Math.floorMod(idGenerator.nextLong(), MAX_JAVASCRIPT_SAFE_ID - 1) + 1;
         } while (existsId(table, id));
         return id;
     }

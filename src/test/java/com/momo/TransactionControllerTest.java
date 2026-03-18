@@ -30,12 +30,15 @@ import org.springframework.test.context.jdbc.Sql.ExecutionPhase;
                 "INSERT INTO account_holders (id, full_name, email) VALUES (4, 'Morgan Low', 'morgan.low@example.com')",
                 "INSERT INTO account_holders (id, full_name, email) VALUES (5, 'River One', 'river.one@example.com')",
                 "INSERT INTO account_holders (id, full_name, email) VALUES (6, 'Credit Holder', 'credit.holder@example.com')",
+                "INSERT INTO account_holders (id, full_name, email) VALUES (7, 'Frozen Card Holder', 'frozen.card@example.com')",
                 "INSERT INTO accounts (id, holder_id, type, balance) VALUES (20, 2, 'CHECKING', 100.00)",
                 "INSERT INTO accounts (id, holder_id, type, balance) VALUES (30, 3, 'SAVINGS', 50.00)",
                 "INSERT INTO accounts (id, holder_id, type, balance) VALUES (40, 4, 'CHECKING', 10.00)",
                 "INSERT INTO accounts (id, holder_id, type, balance) VALUES (50, 5, 'CHECKING', 50.00)",
                 "INSERT INTO accounts (id, holder_id, type, balance) VALUES (60, 6, 'CREDIT', 0.00)",
-                "INSERT INTO cards (id, account_id, type, card_limit, status) VALUES (70, 60, 'CREDIT', 10000.00, 'ACTIVE')"
+                "INSERT INTO accounts (id, holder_id, type, balance) VALUES (70, 7, 'CHECKING', 80.00)",
+                "INSERT INTO cards (id, account_id, type, card_limit, status) VALUES (80, 60, 'CREDIT', 10000.00, 'ACTIVE')",
+                "INSERT INTO cards (id, account_id, type, card_limit, status) VALUES (90, 70, 'DEBIT', 80.00, 'FROZEN')"
         },
         executionPhase = ExecutionPhase.BEFORE_TEST_METHOD
 )
@@ -199,6 +202,33 @@ class TransactionControllerTest extends ApiTestBase {
                         ))))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.error").value("Sender or recipient account not found"));
+    }
+
+    @Test
+    void withdrawalFailsWhenCardFrozen() throws Exception {
+        mockMvc.perform(post("/transactions")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of(
+                                "senderAccountId", 70,
+                                "amount", 5.00,
+                                "transactionType", "WITHDRAWAL"
+                        ))))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("Card is frozen"));
+    }
+
+    @Test
+    void transferFailsWhenSenderCardFrozen() throws Exception {
+        mockMvc.perform(post("/transactions")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of(
+                                "senderAccountId", 70,
+                                "recipientAccountId", 30,
+                                "amount", 5.00,
+                                "transactionType", "TRANSFER"
+                        ))))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("Card is frozen"));
     }
 
     private void createTransaction(Map<String, Object> payload) throws Exception {

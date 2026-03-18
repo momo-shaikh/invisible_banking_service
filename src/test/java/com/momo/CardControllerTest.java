@@ -56,6 +56,30 @@ class CardControllerTest extends ApiTestBase {
     }
 
     @Test
+    void rejectCreditCardForCheckingAccount() throws Exception {
+        mockMvc.perform(post("/accounts/{id}/cards", 10)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of(
+                                "type", "CREDIT",
+                                "status", "ACTIVE"
+                        ))))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("Card type does not match the account type"));
+    }
+
+    @Test
+    void rejectDebitCardForCreditAccount() throws Exception {
+        mockMvc.perform(post("/accounts/{id}/cards", 20)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of(
+                                "type", "DEBIT",
+                                "status", "ACTIVE"
+                        ))))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("Card type does not match the account type"));
+    }
+
+    @Test
     void getCardStatus() throws Exception {
         createCard(10, "DEBIT", "ACTIVE");
 

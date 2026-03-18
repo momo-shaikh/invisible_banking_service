@@ -13,6 +13,7 @@ build/
 .idea/dataSources.local.xml
 .idea/dataSources/
 .idea/sqldialects.xml
+.idea/data_source_mapping.xml
 .idea/libraries/
 *.iws
 *.iml
@@ -46,7 +47,8 @@ bin/
 ### Mac OS ###
 .DS_Store
 
+### Node ###
+node_modules/
+
 ### Local Database ###
-bank.db
-*.db
-*.sqlite
+build/test.db

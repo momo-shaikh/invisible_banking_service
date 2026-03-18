@@ -44,9 +44,17 @@ public class CardController {
         if (account.accountType() != AccountType.CHECKING && account.accountType() != AccountType.CREDIT) {
             throw new IllegalStateException("Cards can only be assigned to CHECKING or CREDIT accounts");
         }
+        if (!isSupportedCardType(account.accountType(), request.type())) {
+            throw new IllegalStateException("Card type does not match the account type");
+        }
 
         BigDecimal cardLimit = request.type() == CardType.DEBIT ? account.balance() : CREDIT_CARD_LIMIT;
         return store.saveCard(account.id(), request.type(), cardLimit, request.status());
+    }
+
+    private boolean isSupportedCardType(AccountType accountType, CardType cardType) {
+        return (accountType == AccountType.CHECKING && cardType == CardType.DEBIT)
+                || (accountType == AccountType.CREDIT && cardType == CardType.CREDIT);
     }
 
     @GetMapping("/status")

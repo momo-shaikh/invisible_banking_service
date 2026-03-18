@@ -4,6 +4,7 @@ import com.momo.dto.TransactionCreateRequest;
 import com.momo.model.Account;
 import com.momo.model.AccountType;
 import com.momo.model.Card;
+import com.momo.model.CardStatus;
 import com.momo.model.Transaction;
 import com.momo.model.TransactionType;
 import com.momo.store.JdbcStore;
@@ -64,6 +65,7 @@ public class TransactionController {
         if (sender == null) {
             throw new IllegalArgumentException("Sender account not found");
         }
+        ensureOutgoingTransactionsAllowed(sender);
         BigDecimal newBalance = sender.balance().subtract(request.amount());
         if (newBalance.compareTo(minimumAllowedBalance(sender)) < 0) {
             throw new IllegalStateException("Insufficient funds");
@@ -78,6 +80,7 @@ public class TransactionController {
         if (sender == null || recipient == null) {
             throw new IllegalArgumentException("Sender or recipient account not found");
         }
+        ensureOutgoingTransactionsAllowed(sender);
         BigDecimal senderNewBalance = sender.balance().subtract(request.amount());
         if (senderNewBalance.compareTo(minimumAllowedBalance(sender)) < 0) {
             throw new IllegalStateException("Insufficient funds");
@@ -97,5 +100,12 @@ public class TransactionController {
             throw new IllegalStateException("Credit account requires an associated card");
         }
         return card.cardLimit().negate();
+    }
+
+    private void ensureOutgoingTransactionsAllowed(Account account) {
+        Card card = store.getCardByAccount(account.id());
+        if (card != null && card.status() == CardStatus.FROZEN) {
+            throw new IllegalStateException("Card is frozen");
+        }
     }
 }

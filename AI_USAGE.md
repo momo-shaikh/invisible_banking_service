@@ -89,3 +89,22 @@
   - Added signup/login tests with duplicate-email and bad-password cases
 - Patch 40: Test fixture cleanup order
   - Cleared auth_credentials before account_holders to satisfy foreign keys
+- Patch 41: Demo database seed
+  - Narrowed database ignores and seeded a committed bank.db with demo users, accounts, cards, and transactions
+- Patch 42: Expanded demo users
+  - Added Leon Kennedy and Ada Wong to the committed demo database
+- Patch 43: Minimal React UI
+  - Added a React + Vite frontend with a minimal login and account dashboard
+  - Built the frontend into Spring static resources for serving from /
+- Patch 44: Card and transaction UI polish
+  - Added card creation to the React UI for the selected account
+  - Preserved the selected account during refreshes and improved transfer selection
+- Patch 45: JavaScript-safe demo IDs
+  - Changed generated IDs to stay within JavaScript's safe integer range
+  - Rewrote the committed demo database IDs and cleared stale-session handling in the UI
+- Patch 46: Frozen card enforcement
+  - Blocked outgoing transactions when the associated card is frozen
+  - Added transaction tests for frozen-card withdrawal and transfer failures
+- Patch 47: Frontend toolchain upgrade
+  - Upgraded the React frontend from vulnerable Vite 4 to Vite 8 with a matching React plugin
+  - Installed Node 20, added Node version guidance files, and verified a clean npm audit
