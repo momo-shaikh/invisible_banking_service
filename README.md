@@ -37,19 +37,15 @@ This removes the persisted SQLite volume and starts with a fresh database the ne
 docker compose down -v
 ```
 
-### Notes
-
-- The Docker build runs the backend test suite before producing the final application image.
-- The runtime container exposes a health check at `/health`.
-- SQLite data is persisted in a Docker volume mounted at `/data/bank.db`.
-
 ## Using UI
 
 ![ui_login_img.png](ui_login_img.png)
 
 Open `http://localhost:8080` after the container is running.
 
-The UI supports:
+Select one of the example users or enter your own credentials to login.
+
+<u>The UI supports:</u>
 
 - signing in with demo users shown on the login screen
 - creating accounts
@@ -59,14 +55,14 @@ The UI supports:
 - statement filtering by date range
 - account deletion
 
-Important behavior:
+<u>Important behavior:</u>
 
 - `CHECKING` accounts can only receive `DEBIT` cards
 - `CREDIT` accounts can only receive `CREDIT` cards
 - frozen-card accounts reject transactions
 - deleting an account also deletes its cards and transactions
 
-Seeded demo credentials:
+<u>Seeded demo credentials:</u>
 
 - `ada@example.com` / `demo123`
 - `ava@example.com` / `demo123`
