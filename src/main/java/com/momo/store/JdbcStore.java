@@ -12,6 +12,7 @@ import java.math.BigDecimal;
 import java.security.SecureRandom;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.Instant;
 import java.util.List;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -24,6 +25,7 @@ public class JdbcStore {
 
     public JdbcStore(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
+        ensureTransactionCreatedAtColumn();
     }
 
     public AccountHolder saveHolder(String fullName, String email) {
@@ -132,21 +134,23 @@ public class JdbcStore {
 
     public Transaction saveTransaction(Long senderAccountId, Long recipientAccountId, BigDecimal amount, TransactionType type, String note) {
         long id = nextId("transactions");
+        Instant createdAt = Instant.now();
         jdbcTemplate.update(
-                "INSERT INTO transactions (id, sender_account_id, recipient_account_id, amount, type, note) VALUES (?, ?, ?, ?, ?, ?)",
+                "INSERT INTO transactions (id, sender_account_id, recipient_account_id, amount, type, note, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
                 id,
                 senderAccountId,
                 recipientAccountId,
                 amount,
                 type.name(),
-                note
+                note,
+                createdAt.toString()
         );
-        return new Transaction(id, senderAccountId, recipientAccountId, amount, type, note);
+        return new Transaction(id, senderAccountId, recipientAccountId, amount, type, note, createdAt);
     }
 
     public List<Transaction> getTransactionsByAccount(long accountId) {
         return jdbcTemplate.query(
-                "SELECT id, sender_account_id, recipient_account_id, amount, type, note FROM transactions " +
+                "SELECT id, sender_account_id, recipient_account_id, amount, type, note, created_at FROM transactions " +
                         "WHERE sender_account_id = ? OR recipient_account_id = ?",
                 transactionRowMapper(),
                 accountId,
@@ -160,6 +164,18 @@ public class JdbcStore {
             id = idGenerator.nextLong() & Long.MAX_VALUE;
         } while (existsId(table, id));
         return id;
+    }
+
+    private void ensureTransactionCreatedAtColumn() {
+        Integer count = jdbcTemplate.queryForObject(
+                "SELECT COUNT(1) FROM pragma_table_info('transactions') WHERE name = 'created_at'",
+                Integer.class
+        );
+        if (count != null && count == 0) {
+            jdbcTemplate.execute(
+                    "ALTER TABLE transactions ADD COLUMN created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP"
+            );
+        }
     }
 
     private boolean existsId(String table, long id) {
@@ -195,7 +211,8 @@ public class JdbcStore {
                 getNullableLong(rs, "recipient_account_id"),
                 rs.getBigDecimal("amount"),
                 TransactionType.valueOf(rs.getString("type")),
-                rs.getString("note")
+                rs.getString("note"),
+                Instant.parse(normalizeTimestamp(rs.getString("created_at")))
         );
     }
 
@@ -212,5 +229,9 @@ public class JdbcStore {
     private Long getNullableLong(ResultSet rs, String column) throws SQLException {
         long value = rs.getLong(column);
         return rs.wasNull() ? null : value;
+    }
+
+    private String normalizeTimestamp(String value) {
+        return value.contains("T") ? value : value.replace(" ", "T") + "Z";
     }
 }

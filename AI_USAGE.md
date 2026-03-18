@@ -69,3 +69,9 @@
   - Allowed negative balances for credit accounts and enforced card-backed debt limits
 - Patch 30: Credit overpayment fix
   - Removed the zero cap so credit accounts can have positive balances after overpayment
+- Patch 31: Transaction timestamps
+  - Added createdAt to transactions with SQLite-compatible migration support
+- Patch 32: Transaction query fix
+  - Added created_at to the account transaction query
+- Patch 33: Computed statements
+  - Added derived statement response and GET /accounts/{id}/statement

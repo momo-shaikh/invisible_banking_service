@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS transactions (
     amount NUMERIC NOT NULL,
     type TEXT NOT NULL,
     note TEXT,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (sender_account_id) REFERENCES accounts(id),
     FOREIGN KEY (recipient_account_id) REFERENCES accounts(id)
 );

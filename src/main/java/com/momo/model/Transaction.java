@@ -3,6 +3,7 @@ package com.momo.model;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import java.math.BigDecimal;
+import java.time.Instant;
 
 public record Transaction(
         @Positive long id,
@@ -10,5 +11,6 @@ public record Transaction(
         @Positive Long recipientAccountId,
         @NotNull @Positive BigDecimal amount,
         @NotNull TransactionType transactionType,
-        String note
+        String note,
+        @NotNull Instant createdAt
 ) {}
