@@ -23,6 +23,7 @@ import org.springframework.test.context.jdbc.Sql.ExecutionPhase;
                 "DELETE FROM transactions",
                 "DELETE FROM cards",
                 "DELETE FROM accounts",
+                "DELETE FROM auth_credentials",
                 "DELETE FROM account_holders",
                 "INSERT INTO account_holders (id, full_name, email) VALUES (2, 'Casey A', 'casey.a@example.com')",
                 "INSERT INTO account_holders (id, full_name, email) VALUES (3, 'Casey B', 'casey.b@example.com')",

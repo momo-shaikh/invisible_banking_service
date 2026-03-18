@@ -24,6 +24,7 @@ import org.springframework.test.web.servlet.MockMvc;
                 "DELETE FROM transactions",
                 "DELETE FROM cards",
                 "DELETE FROM accounts",
+                "DELETE FROM auth_credentials",
                 "DELETE FROM account_holders",
                 "INSERT INTO account_holders (id, full_name, email) VALUES (1, 'Taylor Fox', 'taylor@example.com')",
                 "INSERT INTO accounts (id, holder_id, type, balance) VALUES (10, 1, 'CHECKING', 100.00)"

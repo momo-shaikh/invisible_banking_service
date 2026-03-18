@@ -48,6 +48,32 @@ public class JdbcStore {
         return results.isEmpty() ? null : results.get(0);
     }
 
+    public AccountHolder getHolderByEmail(String email) {
+        List<AccountHolder> results = jdbcTemplate.query(
+                "SELECT id, full_name, email FROM account_holders WHERE email = ?",
+                holderRowMapper(),
+                email
+        );
+        return results.isEmpty() ? null : results.get(0);
+    }
+
+    public void saveCredentials(long holderId, String passwordHash) {
+        jdbcTemplate.update(
+                "INSERT INTO auth_credentials (holder_id, password_hash) VALUES (?, ?)",
+                holderId,
+                passwordHash
+        );
+    }
+
+    public String getPasswordHashByHolderId(long holderId) {
+        List<String> results = jdbcTemplate.query(
+                "SELECT password_hash FROM auth_credentials WHERE holder_id = ?",
+                (rs, ignoredRowNum) -> rs.getString("password_hash"),
+                holderId
+        );
+        return results.isEmpty() ? null : results.get(0);
+    }
+
     public Account saveAccount(long holderId, AccountType type, BigDecimal balance) {
         long id = nextId("accounts");
         jdbcTemplate.update(

@@ -6,6 +6,12 @@ CREATE TABLE IF NOT EXISTS account_holders (
     email TEXT NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS auth_credentials (
+    holder_id INTEGER PRIMARY KEY,
+    password_hash TEXT NOT NULL,
+    FOREIGN KEY (holder_id) REFERENCES account_holders(id)
+);
+
 CREATE TABLE IF NOT EXISTS accounts (
     id INTEGER PRIMARY KEY,
     holder_id INTEGER NOT NULL,

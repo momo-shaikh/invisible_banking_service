@@ -79,3 +79,13 @@
   - Added /health with DB connectivity, readiness state, and shutdown awareness
 - Patch 35: JdbcStore cleanup
   - Removed an unnecessary null check after COUNT(1)
+- Patch 36: Auth foundation
+  - Added BCrypt dependency and separate credential storage for holder passwords
+- Patch 37: Signup and login
+  - Added auth DTOs, in-memory token store, and AuthController endpoints
+- Patch 38: Auth error handling
+  - Changed invalid login failures to 400 with a clearer message
+- Patch 39: Auth tests
+  - Added signup/login tests with duplicate-email and bad-password cases
+- Patch 40: Test fixture cleanup order
+  - Cleared auth_credentials before account_holders to satisfy foreign keys
