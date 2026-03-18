@@ -12,6 +12,7 @@ build/
 .idea/dataSources.xml
 .idea/dataSources.local.xml
 .idea/dataSources/
+.idea/sqldialects.xml
 .idea/libraries/
 *.iws
 *.iml

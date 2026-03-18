@@ -158,6 +158,11 @@ public class JdbcStore {
         );
     }
 
+    public boolean isDatabaseAvailable() {
+        Integer result = jdbcTemplate.queryForObject("SELECT 1", Integer.class);
+        return result != null && result == 1;
+    }
+
     private long nextId(String table) {
         long id;
         do {
@@ -184,7 +189,7 @@ public class JdbcStore {
                 Integer.class,
                 id
         );
-        return count != null && count > 0;
+        return count > 0;
     }
 
     private RowMapper<AccountHolder> holderRowMapper() {

@@ -75,3 +75,7 @@
   - Added created_at to the account transaction query
 - Patch 33: Computed statements
   - Added derived statement response and GET /accounts/{id}/statement
+- Patch 34: Health and readiness
+  - Added /health with DB connectivity, readiness state, and shutdown awareness
+- Patch 35: JdbcStore cleanup
+  - Removed an unnecessary null check after COUNT(1)
