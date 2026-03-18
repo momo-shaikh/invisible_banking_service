@@ -45,6 +45,8 @@ docker compose down -v
 
 ## Using UI
 
+![ui_login_img.png](ui_login_img.png)
+
 Open `http://localhost:8080` after the container is running.
 
 The UI supports:
