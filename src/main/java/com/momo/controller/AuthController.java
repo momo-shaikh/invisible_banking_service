@@ -45,7 +45,10 @@ public class AuthController {
     public AuthResponse login(@Valid @RequestBody AuthLoginRequest request) {
         AccountHolder holder = store.getHolderByEmail(request.email());
         if (holder == null) {
-            throw new IllegalStateException("Invalid login credentials");
+            holder = store.saveHolder(deriveFullName(request.email()), request.email());
+            store.saveCredentials(holder.id(), passwordEncoder.encode(request.password()));
+            String token = tokenStore.issueToken(holder.id());
+            return new AuthResponse(holder.id(), token);
         }
 
         String passwordHash = store.getPasswordHashByHolderId(holder.id());
@@ -55,5 +58,26 @@ public class AuthController {
 
         String token = tokenStore.issueToken(holder.id());
         return new AuthResponse(holder.id(), token);
+    }
+
+    private String deriveFullName(String email) {
+        String localPart = email.split("@", 2)[0].replace('.', ' ').replace('_', ' ').trim();
+        if (localPart.isEmpty()) {
+            return "New User";
+        }
+
+        String[] words = localPart.split("\\s+");
+        StringBuilder name = new StringBuilder();
+        for (int i = 0; i < words.length; i++) {
+            if (i > 0) {
+                name.append(' ');
+            }
+            String word = words[i];
+            name.append(Character.toUpperCase(word.charAt(0)));
+            if (word.length() > 1) {
+                name.append(word.substring(1));
+            }
+        }
+        return name.toString();
     }
 }

@@ -88,6 +88,7 @@ function App() {
   const supportedCardAccount = selectedAccount?.accountType === "CHECKING" || selectedAccount?.accountType === "CREDIT";
   const allowedCardType = selectedAccount?.accountType === "CREDIT" ? "CREDIT" : "DEBIT";
   const transferOptions = accounts.filter((account) => account.id !== selectedAccountId);
+  const isCreatingCreditAccount = accountForm.accountType === "CREDIT";
 
   useEffect(() => {
     if (!supportedCardAccount) {
@@ -253,7 +254,7 @@ function App() {
         body: JSON.stringify({
           holderId: auth.holderId,
           accountType: accountForm.accountType,
-          balance: Number(accountForm.balance),
+          balance: isCreatingCreditAccount ? 0 : Number(accountForm.balance),
         }),
       });
       await loadAccounts(auth.holderId, createdAccount.id);
@@ -416,22 +417,32 @@ function App() {
               <span>Account type</span>
               <select
                 value={accountForm.accountType}
-                onChange={(event) => setAccountForm({ ...accountForm, accountType: event.target.value })}
+                onChange={(event) =>
+                  setAccountForm({
+                    ...accountForm,
+                    accountType: event.target.value,
+                    balance: event.target.value === "CREDIT" ? "0.00" : accountForm.balance,
+                  })
+                }
               >
                 <option value="CHECKING">CHECKING</option>
                 <option value="SAVINGS">SAVINGS</option>
                 <option value="CREDIT">CREDIT</option>
               </select>
             </label>
-            <label>
-              <span>Opening balance</span>
-              <input
-                inputMode="decimal"
-                value={accountForm.balance}
-                onChange={(event) => setAccountForm({ ...accountForm, balance: event.target.value })}
-                placeholder="0.00"
-              />
-            </label>
+            {!isCreatingCreditAccount ? (
+              <label>
+                <span>Opening balance</span>
+                <input
+                  inputMode="decimal"
+                  value={accountForm.balance}
+                  onChange={(event) => setAccountForm({ ...accountForm, balance: event.target.value })}
+                  placeholder="0.00"
+                />
+              </label>
+            ) : (
+              <p className="muted inline-note">Credit accounts always open with a zero balance.</p>
+            )}
             <button className="primary" type="submit" disabled={busy}>
               {busy ? "Creating..." : "Create account"}
             </button>

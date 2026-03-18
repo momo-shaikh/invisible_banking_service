@@ -72,6 +72,19 @@ class AuthControllerTest extends ApiTestBase {
     }
 
     @Test
+    void loginCreatesMissingUser() throws Exception {
+        mockMvc.perform(post("/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of(
+                                "email", "new.user@example.com",
+                                "password", "password123"
+                        ))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.holderId").exists())
+                .andExpect(jsonPath("$.token").isString());
+    }
+
+    @Test
     void loginFailsWithBadPassword() throws Exception {
         insertCredentials();
 

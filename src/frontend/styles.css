@@ -303,6 +303,10 @@ button:disabled {
   color: #8a3a2f;
 }
 
+.inline-note {
+  margin: 0;
+}
+
 @media (max-width: 900px) {
   .layout {
     grid-template-columns: 1fr;

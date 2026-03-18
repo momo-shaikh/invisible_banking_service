@@ -1,0 +1,9 @@
+.git
+.gitignore
+.gradle
+.idea
+build
+node_modules
+bank.db
+*.iml
+README.md

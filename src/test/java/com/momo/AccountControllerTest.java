@@ -63,6 +63,19 @@ class AccountControllerTest extends ApiTestBase {
     }
 
     @Test
+    void rejectCreditAccountWithOpeningBalance() throws Exception {
+        mockMvc.perform(post("/accounts")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of(
+                                "holderId", 1,
+                                "accountType", "CREDIT",
+                                "balance", 100.00
+                        ))))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("Credit accounts must start with a zero balance"));
+    }
+
+    @Test
     void deleteFundedAccount() throws Exception {
         mockMvc.perform(delete("/accounts/{id}", 10))
                 .andExpect(status().isNoContent());
