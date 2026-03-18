@@ -28,10 +28,13 @@ import org.springframework.test.context.jdbc.Sql.ExecutionPhase;
                 "INSERT INTO account_holders (id, full_name, email) VALUES (3, 'Casey B', 'casey.b@example.com')",
                 "INSERT INTO account_holders (id, full_name, email) VALUES (4, 'Morgan Low', 'morgan.low@example.com')",
                 "INSERT INTO account_holders (id, full_name, email) VALUES (5, 'River One', 'river.one@example.com')",
+                "INSERT INTO account_holders (id, full_name, email) VALUES (6, 'Credit Holder', 'credit.holder@example.com')",
                 "INSERT INTO accounts (id, holder_id, type, balance) VALUES (20, 2, 'CHECKING', 100.00)",
                 "INSERT INTO accounts (id, holder_id, type, balance) VALUES (30, 3, 'SAVINGS', 50.00)",
                 "INSERT INTO accounts (id, holder_id, type, balance) VALUES (40, 4, 'CHECKING', 10.00)",
-                "INSERT INTO accounts (id, holder_id, type, balance) VALUES (50, 5, 'CHECKING', 50.00)"
+                "INSERT INTO accounts (id, holder_id, type, balance) VALUES (50, 5, 'CHECKING', 50.00)",
+                "INSERT INTO accounts (id, holder_id, type, balance) VALUES (60, 6, 'CREDIT', 0.00)",
+                "INSERT INTO cards (id, account_id, type, card_limit, status) VALUES (70, 60, 'CREDIT', 10000.00, 'ACTIVE')"
         },
         executionPhase = ExecutionPhase.BEFORE_TEST_METHOD
 )
@@ -103,6 +106,51 @@ class TransactionControllerTest extends ApiTestBase {
         mockMvc.perform(get("/accounts/{id}/transactions", accountA))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(1));
+    }
+
+    @Test
+    void createCreditWithdrawal() throws Exception {
+        createTransaction(Map.of(
+                "senderAccountId", 60,
+                "amount", 250.00,
+                "transactionType", "WITHDRAWAL"
+        ));
+
+        mockMvc.perform(get("/accounts/{id}", 60))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.balance").value(-250.00));
+    }
+
+    @Test
+    void createCreditDeposit() throws Exception {
+        createTransaction(Map.of(
+                "senderAccountId", 60,
+                "amount", 250.00,
+                "transactionType", "WITHDRAWAL"
+        ));
+
+        createTransaction(Map.of(
+                "recipientAccountId", 60,
+                "amount", 400.00,
+                "transactionType", "DEPOSIT"
+        ));
+
+        mockMvc.perform(get("/accounts/{id}", 60))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.balance").value(150.00));
+    }
+
+    @Test
+    void creditWithdrawalFailsWhenLimitExceeded() throws Exception {
+        mockMvc.perform(post("/transactions")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of(
+                                "senderAccountId", 60,
+                                "amount", 10001.00,
+                                "transactionType", "WITHDRAWAL"
+                        ))))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("Insufficient funds"));
     }
 
     @Test

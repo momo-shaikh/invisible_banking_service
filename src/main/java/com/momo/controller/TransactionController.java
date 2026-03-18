@@ -2,6 +2,8 @@ package com.momo.controller;
 
 import com.momo.dto.TransactionCreateRequest;
 import com.momo.model.Account;
+import com.momo.model.AccountType;
+import com.momo.model.Card;
 import com.momo.model.Transaction;
 import com.momo.model.TransactionType;
 import com.momo.store.JdbcStore;
@@ -62,10 +64,10 @@ public class TransactionController {
         if (sender == null) {
             throw new IllegalArgumentException("Sender account not found");
         }
-        if (sender.balance().compareTo(request.amount()) < 0) {
+        BigDecimal newBalance = sender.balance().subtract(request.amount());
+        if (newBalance.compareTo(minimumAllowedBalance(sender)) < 0) {
             throw new IllegalStateException("Insufficient funds");
         }
-        BigDecimal newBalance = sender.balance().subtract(request.amount());
         store.updateAccountBalance(sender.id(), newBalance);
         return store.saveTransaction(sender.id(), null, request.amount(), request.transactionType(), request.note());
     }
@@ -76,11 +78,24 @@ public class TransactionController {
         if (sender == null || recipient == null) {
             throw new IllegalArgumentException("Sender or recipient account not found");
         }
-        if (sender.balance().compareTo(request.amount()) < 0) {
+        BigDecimal senderNewBalance = sender.balance().subtract(request.amount());
+        if (senderNewBalance.compareTo(minimumAllowedBalance(sender)) < 0) {
             throw new IllegalStateException("Insufficient funds");
         }
-        store.updateAccountBalance(sender.id(), sender.balance().subtract(request.amount()));
-        store.updateAccountBalance(recipient.id(), recipient.balance().add(request.amount()));
+        BigDecimal recipientNewBalance = recipient.balance().add(request.amount());
+        store.updateAccountBalance(sender.id(), senderNewBalance);
+        store.updateAccountBalance(recipient.id(), recipientNewBalance);
         return store.saveTransaction(sender.id(), recipient.id(), request.amount(), request.transactionType(), request.note());
+    }
+
+    private BigDecimal minimumAllowedBalance(Account account) {
+        if (account.accountType() != AccountType.CREDIT) {
+            return BigDecimal.ZERO;
+        }
+        Card card = store.getCardByAccount(account.id());
+        if (card == null) {
+            throw new IllegalStateException("Credit account requires an associated card");
+        }
+        return card.cardLimit().negate();
     }
 }

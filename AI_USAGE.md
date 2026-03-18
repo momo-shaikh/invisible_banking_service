@@ -65,3 +65,7 @@
   - Added create/status/limit/update tests and card-aware cleanup
 - Patch 28: Card status transition test
   - Extended status update test to freeze and reactivate the card
+- Patch 29: Credit account transaction rules
+  - Allowed negative balances for credit accounts and enforced card-backed debt limits
+- Patch 30: Credit overpayment fix
+  - Removed the zero cap so credit accounts can have positive balances after overpayment
